@@ -1,56 +1,47 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 from sklearn import datasets
-# from sklearn.linear_model import LogisticRegression
-# from sklearn.model_selection import train_test_split
-
-# Initializig Dummy Datasets
-# m = 1000    # Number of Intances
-# n = 9       # Number of Variables
-# X = np.random.randn(m, n)
-# X = np.c_[np.ones(m), X]
-# y = np.random.choice([0, 1], m, replace=True)
-
-
-def train_test_split(X, y, test_size=0.3):
-    m = X.shape[0]
-    sample_size = int(np.ma.floor(X.shape[0]*test_size))
-    indexes = np.arange(m)
-    np.random.shuffle(indexes)
-    return X[indexes[sample_size:]], X[indexes[:sample_size]], y[indexes[sample_size:]], y[indexes[:sample_size]]
 
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-1 * x))
 
 
-def predict(X, theta):
-    return sigmoid(np.dot(X, theta))
+def train_test_split(X, y, test_size=0.3):
+    m = X.shape[0]
+    sample_size = int(np.ma.floor(X.shape[0] * test_size))
+    indexes = np.arange(m)
+    np.random.shuffle(indexes)
+    return X[indexes[sample_size:]], X[indexes[:sample_size]], y[indexes[sample_size:]], y[indexes[:sample_size]]
 
 
-def cost_function(y_true, y_pred):
-    cost = 0
-    m = len(y_true)
-    for i in range(m):
-        cost += y_true[i] * np.log(y_pred[i]) + (1 - y_true[i]) * np.log(1 - y_pred[i])
-    # TODO: Add Regulaization Term in cost function
-    # if theta:
-    #     cost += np.sum(np.abs(theta))
-    return -1 * cost / m
+class LogisticRegression():
 
+    def __init__(self, learning_rate=0.01, max_iter=100, penalty="l2"):
+        self.max_iter = max_iter
+        self.penalty = penalty
+        self.learning_rate = learning_rate
+        self.weights = None
 
-def gradient(theta, X, y):
-    return (np.dot(X.T, predict(X, theta) - y) + theta) / X.shape[0]
+    def predict_proba(self, X):
+        return sigmoid(np.dot(X, self.weights))
 
+    def predict(self, X, threshold=0.5):
+        return X > threshold
 
-# eta = 0.1
-# num_iter = 100
-# theta = np.random.randn(n+1)
-# theta_history = np.zeros((num_iter, n+1))
-# for k in range(num_iter):
-#     theta = theta - eta * gradient(theta, X, y)
-#     theta_history[k, :] = theta
+    def update_weights(self, X, y):
+        if self.penalty == "l2":
+            self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.weights) / \
+                           X.shape[0]
+        elif self.penalty is None:
+            self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y)) / X.shape[0]
+        else:
+            raise
+
+    def fit(self, X, y):
+        m, n = X.shape
+        self.weights = np.random.randn(n)
+        for _ in range(self.max_iter):
+            self.update_weights(X, y)
 
 
 iris_data = datasets.load_iris()
@@ -59,25 +50,9 @@ m, n = X.shape
 X = np.c_[np.ones(m), X]
 y = (iris_data.get("target") == 0)
 
-eta = 0.1
-tol = 1
-num_iter = 10000
-theta = np.random.randn(n + 1)
-theta_history = np.zeros((num_iter, n + 1))
-costs = []
-gradients = []
-tolerence = 1
-k = 0
-while tol > 0.0001 and k < num_iter:
-    print(1)
-    _, X_sample, _, y_sample = train_test_split(X, y, test_size=1)
-    grad = gradient(theta, X_sample, y_sample)
-    theta = theta - eta * grad
-    costs.append(cost_function(y_true=y_sample, y_pred=predict(X_sample, theta)))
-    gradients.append(grad)
-    theta_history[k, :] = theta
-    tol = costs[k]
-    k += 1
+X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-plt.plot(range(num_iter), costs)
+clf = LogisticRegression()
+clf.fit(X_train, y_train)
+print(clf.weights)
 
