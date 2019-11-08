@@ -14,7 +14,7 @@ def train_test_split(X, y, test_size=0.3):
     return X[indexes[sample_size:]], X[indexes[:sample_size]], y[indexes[sample_size:]], y[indexes[:sample_size]]
 
 
-class LogisticRegression():
+class LogisticRegression:
 
     def __init__(self, learning_rate=0.01, max_iter=100, penalty="l2"):
         self.max_iter = max_iter
@@ -26,7 +26,7 @@ class LogisticRegression():
         return sigmoid(np.dot(X, self.weights))
 
     def predict(self, X, threshold=0.5):
-        return X > threshold
+        return self.predict_proba(X) > threshold
 
     def update_weights(self, X, y):
         if self.penalty == "l2":
@@ -43,6 +43,12 @@ class LogisticRegression():
         for _ in range(self.max_iter):
             self.update_weights(X, y)
 
+    def score(self, y_true, y_predicted):
+        if len(y_true) != len(y_predicted):
+            raise
+        elif type(y_true) == type(y_predicted) == np.ndarray:
+            return sum((y_true & y_predicted) | [ not i for i in (y_true | y_predicted)])/len(y_true)
+
 
 iris_data = datasets.load_iris()
 X = iris_data.get("data")
@@ -54,5 +60,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 clf = LogisticRegression()
 clf.fit(X_train, y_train)
-print(clf.weights)
-
+print("Weights: ", clf.weights)
+preds = clf.predict(X_test)
+print("Predicted: ", preds[:5])
+print("True:      ", y_test[:5])
