@@ -14,8 +14,8 @@ def train_test_split(X, y, test_size=0.3):
     return X[indexes[sample_size:]], X[indexes[:sample_size]], y[indexes[sample_size:]], y[indexes[:sample_size]]
 
 
-class LogisticRegression:
-
+class LogisticRegression():
+    # TODO: Make this class work for multi-class problem
     def __init__(self, learning_rate=0.01, max_iter=100, penalty="l2"):
         self.max_iter = max_iter
         self.penalty = penalty
@@ -26,9 +26,11 @@ class LogisticRegression:
         return sigmoid(np.dot(X, self.weights))
 
     def predict(self, X, threshold=0.5):
+        # TODO: Tune threshold to get maximum accuracy
         return self.predict_proba(X) > threshold
 
     def update_weights(self, X, y):
+        # TODO: Add l1 penalty
         if self.penalty == "l2":
             self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.weights) / \
                            X.shape[0]
@@ -62,5 +64,4 @@ clf = LogisticRegression()
 clf.fit(X_train, y_train)
 print("Weights: ", clf.weights)
 preds = clf.predict(X_test)
-print("Predicted: ", preds[:5])
-print("True:      ", y_test[:5])
+print("Accuracy: ", clf.score(y_test, preds))
