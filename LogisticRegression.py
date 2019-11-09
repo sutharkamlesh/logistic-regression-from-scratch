@@ -16,7 +16,8 @@ def train_test_split(X, y, test_size=0.3):
 
 class LogisticRegression():
     # TODO: Make this class work for multi-class problem
-    def __init__(self, learning_rate=0.01, max_iter=100, penalty="l2"):
+    def __init__(self, C = 0.5, learning_rate=0.01, max_iter=100, penalty="l2"):
+        self.C = C
         self.max_iter = max_iter
         self.penalty = penalty
         self.learning_rate = learning_rate
@@ -32,7 +33,7 @@ class LogisticRegression():
     def update_weights(self, X, y):
         # TODO: Add l1 penalty
         if self.penalty == "l2":
-            self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.weights) / \
+            self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.C * self.weights) / \
                            X.shape[0]
         elif self.penalty is None:
             self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y)) / X.shape[0]
