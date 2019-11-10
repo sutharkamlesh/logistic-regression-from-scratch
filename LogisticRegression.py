@@ -16,7 +16,7 @@ def train_test_split(X, y, test_size=0.3):
 
 class LogisticRegression():
     # TODO: Make this class work for multi-class problem
-    def __init__(self, C = 0.5, learning_rate=0.01, max_iter=100, penalty="l2"):
+    def __init__(self, C = 0.5, learning_rate=0.01, max_iter=100, penalty=None):
         self.C = C
         self.max_iter = max_iter
         self.penalty = penalty
@@ -61,7 +61,7 @@ y = (iris_data.get("target") == 0)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-clf = LogisticRegression()
+clf = LogisticRegression(penalty="l2")
 clf.fit(X_train, y_train)
 print("Weights: ", clf.weights)
 preds = clf.predict(X_test)
