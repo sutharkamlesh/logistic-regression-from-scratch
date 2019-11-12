@@ -56,6 +56,7 @@ class LogisticRegression():
 iris_data = datasets.load_iris()
 X = iris_data.get("data")
 m, n = X.shape
+X = (X - X.mean(axis=0))/X.std(axis=0)
 X = np.c_[np.ones(m), X]
 y = (iris_data.get("target") == 0)
 
