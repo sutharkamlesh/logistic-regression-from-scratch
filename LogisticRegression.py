@@ -16,12 +16,17 @@ def train_test_split(X, y, test_size=0.3):
 
 class LogisticRegression():
     # TODO: Make this class work for multi-class problem
-    def __init__(self, C = 0.5, learning_rate=0.01, max_iter=100, penalty=None):
+    def __init__(self, C = 0.5, learning_rate=0.01, initial_weights=None, max_iter=100, penalty=None, sample_size=1):
         self.C = C
         self.max_iter = max_iter
         self.penalty = penalty
         self.learning_rate = learning_rate
-        self.weights = None
+        self.sample_size = sample_size
+        self.weights = initial_weights
+        self.history = {
+            "costs": [],
+            "accuracy": []
+        }
 
     def predict_proba(self, X):
         return sigmoid(np.dot(X, self.weights))
@@ -40,16 +45,30 @@ class LogisticRegression():
         else:
             raise
 
+    def sample(self, X, y):
+        sample_idx = np.random.choice(X.shape[0], self.sample_size)
+        return X[sample_idx], y[sample_idx]
+
     def update_weights(self, X, y):
         self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.penalty_term) / \
                         X.shape[0]
+        print(self.weights)
 
+    def cost(self, y_true, y_pred):
+        cost = np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        # TODO: Add Regulaization Term in cost function
+        # if theta:
+        #     cost += np.sum(np.abs(theta))
+        return -1 * cost
 
     def fit(self, X, y):
         m, n = X.shape
         self.weights = np.random.randn(n)
         for _ in range(self.max_iter):
-            self.update_weights(X, y)
+            sample_X, sample_y = self.sample(X, y)
+            self.update_weights(sample_X, sample_y)
+            self.history.get("costs").append(self.cost(y, self.predict_proba(X)))
+            self.history.get("accuracy").append(self.score(y, self.predict(X)))
 
     def score(self, y_true, y_predicted):
         if len(y_true) != len(y_predicted):
@@ -67,7 +86,7 @@ y = (iris_data.get("target") == 0)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-clf = LogisticRegression(penalty="l2")
+clf = LogisticRegression(sample_size=64)
 clf.fit(X_train, y_train)
 print("Weights: ", clf.weights)
 preds = clf.predict(X_test)
