@@ -30,15 +30,20 @@ class LogisticRegression():
         # TODO: Tune threshold to get maximum accuracy
         return self.predict_proba(X) > threshold
 
-    def update_weights(self, X, y):
+    @property
+    def penalty_term(self):
         # TODO: Add l1 penalty
         if self.penalty == "l2":
-            self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.C * self.weights) / \
-                           X.shape[0]
+            return self.C * self.weights
         elif self.penalty is None:
-            self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y)) / X.shape[0]
+            return 0
         else:
             raise
+
+    def update_weights(self, X, y):
+        self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y) + self.penalty_term) / \
+                        X.shape[0]
+
 
     def fit(self, X, y):
         m, n = X.shape
