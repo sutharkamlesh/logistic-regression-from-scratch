@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn import datasets
+from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
+
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-1 * x))
@@ -14,9 +16,9 @@ def train_test_split(X, y, test_size=0.3):
     return X[indexes[sample_size:]], X[indexes[:sample_size]], y[indexes[sample_size:]], y[indexes[:sample_size]]
 
 
-class CustomLogisticRegression():
+class CustomLogisticRegression:
     # TODO: Make this class work for multi-class problem
-    def __init__(self, C = 0.5, learning_rate=0.01, max_iter=100, penalty=None, sample_size=1):
+    def __init__(self, C=0.5, learning_rate=0.01, max_iter=100, penalty=None, sample_size=1):
         self.C = C
         self.max_iter = max_iter
         self.penalty = penalty
@@ -52,7 +54,7 @@ class CustomLogisticRegression():
 
     def update_weights(self, X, y):
         self.weights = self.weights - self.learning_rate * (np.dot(X.T, self.predict_proba(X) - y)) / X.shape[0]
-        
+
     def update_bias(self, X, y):
         self.bias = self.bias - (self.learning_rate * np.mean(self.predict_proba(X) - y))
 
@@ -62,6 +64,12 @@ class CustomLogisticRegression():
         # if theta:
         #     cost += np.sum(np.abs(theta))
         return -1 * cost
+
+    def score(self, y_true, y_predicted):
+        if len(y_true) != len(y_predicted):
+            raise
+        elif type(y_true) == type(y_predicted) == np.ndarray:
+            return sum((y_true & y_predicted) | [not i for i in (y_true | y_predicted)]) / len(y_true)
 
     def fit(self, X, y):
         m, n = X.shape
@@ -74,17 +82,11 @@ class CustomLogisticRegression():
             self.history.get("costs").append(self.cost(y, self.predict_proba(X)))
             self.history.get("accuracy").append(self.score(y, self.predict(X)))
 
-    def score(self, y_true, y_predicted):
-        if len(y_true) != len(y_predicted):
-            raise
-        elif type(y_true) == type(y_predicted) == np.ndarray:
-            return sum((y_true & y_predicted) | [ not i for i in (y_true | y_predicted)])/len(y_true)
-
 
 iris_data = datasets.load_breast_cancer()
 X = iris_data.get("data")
 m, n = X.shape
-X = (X - X.mean(axis=0))/X.std(axis=0)
+X = (X - X.mean(axis=0)) / X.std(axis=0)
 # X = np.c_[np.ones(m), X]
 y = (iris_data.get("target") == 0)
 
@@ -97,16 +99,12 @@ print("Weights: ", clf.weights, "\n", "Bias: ", clf.bias)
 preds = clf.predict(X_test)
 print("Accuracy: ", clf.score(y_test, preds))
 
-print("Event rate:", sum(y_test)/len(y_test))
+print("Event rate:", sum(y_test) / len(y_test))
 
-# Comparing the output of Sciket Learn Method 
-from sklearn.linear_model import LogisticRegression
-
+# Comparing the output of Scikit Learn Method
 clf = LogisticRegression()
 clf.fit(X_train, y_train)
 print("Weights: ", clf.coef_, "\n", "Bias: ", clf.intercept_)
 
 preds = clf.predict(X_test)
 print("Accuracy: ", clf.score(y_test, preds))
-
-sum(y_test == preds)/len(y_test)
